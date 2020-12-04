@@ -82,7 +82,6 @@ from ..{{cookiecutter.lowercase_modelname}}.configuration_{{cookiecutter.lowerca
 
 # Below: "# Add modeling imports here"
 # Replace with:
-
 from ..{{cookiecutter.lowercase_modelname}}.modeling_{{cookiecutter.lowercase_modelname}} import (
     {{cookiecutter.camelcase_modelname}}ForMaskedLM,
     {{cookiecutter.camelcase_modelname}}ForMultipleChoice,
@@ -137,7 +136,6 @@ from ..{{cookiecutter.lowercase_modelname}}.modeling_{{cookiecutter.lowercase_mo
 
 # Below: "# Add modeling imports here"
 # Replace with:
-
 from ..{{cookiecutter.lowercase_modelname}}.modeling_tf_{{cookiecutter.lowercase_modelname}} import (
     TF{{cookiecutter.camelcase_modelname}}ForMaskedLM,
     TF{{cookiecutter.camelcase_modelname}}ForMultipleChoice,
