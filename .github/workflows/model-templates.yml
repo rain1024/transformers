@@ -1,6 +1,12 @@
 name: Model templates runner
 
 on:
+  push:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - ".github/**"
+      - "templates/**"
   pull_request:
     paths:
       - "src/**"
