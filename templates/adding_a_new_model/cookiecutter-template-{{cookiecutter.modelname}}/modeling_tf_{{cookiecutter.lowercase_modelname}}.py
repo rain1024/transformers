@@ -1151,7 +1151,7 @@ class TF{{cookiecutter.camelcase_modelname}}ForTokenClassification(TF{{cookiecut
             training=training,
             kwargs_call=kwargs,
         )
-        outputs = self.{{cookiecutter.uppercase_modelname}}(
+        outputs = self.{{cookiecutter.lowercase_modelname}}(
             inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
             token_type_ids=inputs["token_type_ids"],
@@ -1246,7 +1246,7 @@ class TF{{cookiecutter.camelcase_modelname}}ForQuestionAnswering(TF{{cookiecutte
             training=training,
             kwargs_call=kwargs,
         )
-        outputs = self.{{cookiecutter.uppercase_modelname}}(
+        outputs = self.{{cookiecutter.lowercase_modelname}}(
             inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
             token_type_ids=inputs["token_type_ids"],
