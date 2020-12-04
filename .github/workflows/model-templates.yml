@@ -47,8 +47,7 @@ jobs:
 
       - name: Run all non-slow tests
         run: |
-          source .env/bin/activate
-          python -m pytest -n 2 --dist=loadfile -s --make-reports=tests_torch_templates tests
+          python -m pytest -n 2 --dist=loadfile -s --make-reports=tests_torch_templates tests/*template*
 
       - name: Failure short reports
         if: ${{ always() }}
