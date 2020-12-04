@@ -16,7 +16,7 @@ on:
 
 
 jobs:
-  run_tests_torch:
+  run_tests_templates:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,7 +32,7 @@ jobs:
         id: cache
         with:
           path: .env
-          key: v1.1-tests_torch_gpu-${{ hashFiles('setup.py') }}
+          key: v1.1-tests_templates-${{ hashFiles('setup.py') }}
 
       - name: Install dependencies
         run: |
@@ -47,15 +47,19 @@ jobs:
 
       - name: Run all non-slow tests
         run: |
-          python -m pytest -n 2 --dist=loadfile -s --make-reports=tests_torch_templates tests/*template*
+          python -m pytest -n 2 --dist=loadfile -s --make-reports=tests_templates tests/*template*
+
+      - name: Run style changes
+        run: |
+          make fixup
 
       - name: Failure short reports
         if: ${{ always() }}
-        run: cat reports/tests_torch_templates_failures_short.txt
+        run: cat reports/tests_templates_failures_short.txt
 
       - name: Test suite reports artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
-          name: run_all_tests_torch_templates_test_reports
+          name: run_all_tests_templates_test_reports
           path: reports
