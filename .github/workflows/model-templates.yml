@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install .[torch,sklearn,testing,onnxruntime,sentencepiece,datasets]
+          pip install .[dev]
       - name: Create model files
         run: |
           transformers-cli add-new-model --testing --testing_file=templates/adding_a_new_model/tests/encoder-bert-tokenizer.json --path=templates/adding_a_new_model
