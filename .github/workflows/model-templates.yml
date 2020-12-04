@@ -51,6 +51,8 @@ jobs:
 
       - name: Run style changes
         run: |
+          git remote add origin https://github.com/huggingface/transformers
+          git fetch origin master:master
           make fixup
 
       - name: Failure short reports
