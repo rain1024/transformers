@@ -17,6 +17,7 @@
 
 import unittest
 
+from tests.test_modeling_common import floats_tensor
 from transformers import is_torch_available
 from transformers.testing_utils import require_torch, slow, torch_device
 from .test_configuration_common import ConfigTester
@@ -28,6 +29,7 @@ if is_torch_available():
     from transformers import (
         {{cookiecutter.camelcase_modelname}}Config,
         {{cookiecutter.camelcase_modelname}}ForMaskedLM,
+        {{cookiecutter.camelcase_modelname}}LMHeadModel,
         {{cookiecutter.camelcase_modelname}}ForMultipleChoice,
         {{cookiecutter.camelcase_modelname}}ForQuestionAnswering,
         {{cookiecutter.camelcase_modelname}}ForSequenceClassification,
@@ -122,6 +124,33 @@ class {{cookiecutter.camelcase_modelname}}ModelTester:
 
         return config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
 
+    def prepare_config_and_inputs_for_decoder(self):
+        (
+            config,
+            input_ids,
+            token_type_ids,
+            input_mask,
+            sequence_labels,
+            token_labels,
+            choice_labels,
+        ) = self.prepare_config_and_inputs()
+
+        config.is_decoder = True
+        encoder_hidden_states = floats_tensor([self.batch_size, self.seq_length, self.hidden_size])
+        encoder_attention_mask = ids_tensor([self.batch_size, self.seq_length], vocab_size=2)
+
+        return (
+            config,
+            input_ids,
+            token_type_ids,
+            input_mask,
+            sequence_labels,
+            token_labels,
+            choice_labels,
+            encoder_hidden_states,
+            encoder_attention_mask,
+        )
+
     def create_and_check_model(
             self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
@@ -132,6 +161,57 @@ class {{cookiecutter.camelcase_modelname}}ModelTester:
         result = model(input_ids, token_type_ids=token_type_ids)
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
+
+    def create_and_check_model_as_decoder(
+            self,
+            config,
+            input_ids,
+            token_type_ids,
+            input_mask,
+            sequence_labels,
+            token_labels,
+            choice_labels,
+            encoder_hidden_states,
+            encoder_attention_mask,
+    ):
+        config.add_cross_attention = True
+        model = {{cookiecutter.camelcase_modelname}}Model(config)
+        model.to(torch_device)
+        model.eval()
+        result = model(
+            input_ids,
+            attention_mask=input_mask,
+            token_type_ids=token_type_ids,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
+        )
+        result = model(
+            input_ids,
+            attention_mask=input_mask,
+            token_type_ids=token_type_ids,
+            encoder_hidden_states=encoder_hidden_states,
+        )
+        result = model(input_ids, attention_mask=input_mask, token_type_ids=token_type_ids)
+        self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
+        self.parent.assertEqual(result.pooler_output.shape, (self.batch_size, self.hidden_size))
+
+    def create_and_check_for_causal_lm(
+            self,
+            config,
+            input_ids,
+            token_type_ids,
+            input_mask,
+            sequence_labels,
+            token_labels,
+            choice_labels,
+            encoder_hidden_states,
+            encoder_attention_mask,
+    ):
+        model = {{cookiecutter.camelcase_modelname}}LMHeadModel(config=config)
+        model.to(torch_device)
+        model.eval()
+        result = model(input_ids, attention_mask=input_mask, token_type_ids=token_type_ids, labels=token_labels)
+        self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
     def create_and_check_for_masked_lm(
             self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
@@ -218,6 +298,7 @@ class {{cookiecutter.camelcase_modelname}}ModelTest(ModelTesterMixin, unittest.T
         (
             {{cookiecutter.camelcase_modelname}}Model,
             {{cookiecutter.camelcase_modelname}}ForMaskedLM,
+            {{cookiecutter.camelcase_modelname}}LMHeadModel,
             {{cookiecutter.camelcase_modelname}}ForMultipleChoice,
             {{cookiecutter.camelcase_modelname}}ForQuestionAnswering,
             {{cookiecutter.camelcase_modelname}}ForSequenceClassification,
@@ -226,6 +307,7 @@ class {{cookiecutter.camelcase_modelname}}ModelTest(ModelTesterMixin, unittest.T
         if is_torch_available()
         else ()
     )
+    all_generative_model_classes = ({{cookiecutter.camelcase_modelname}}LMHeadModel,) if is_torch_available() else ()
 
     def setUp(self):
         self.model_tester = {{cookiecutter.camelcase_modelname}}ModelTester(self)
@@ -237,6 +319,12 @@ class {{cookiecutter.camelcase_modelname}}ModelTest(ModelTesterMixin, unittest.T
     def test_model(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
         self.model_tester.create_and_check_model(*config_and_inputs)
+
+    def test_model_various_embeddings(self):
+        config_and_inputs = self.model_tester.prepare_config_and_inputs()
+        for type in ["absolute", "relative_key", "relative_key_query"]:
+            config_and_inputs[0].position_embedding_type = type
+            self.model_tester.create_and_check_model(*config_and_inputs)
 
     def test_for_masked_lm(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
@@ -257,6 +345,38 @@ class {{cookiecutter.camelcase_modelname}}ModelTest(ModelTesterMixin, unittest.T
     def test_for_token_classification(self):
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
         self.model_tester.create_and_check_for_token_classification(*config_and_inputs)
+
+    def test_model_as_decoder(self):
+        config_and_inputs = self.model_tester.prepare_config_and_inputs_for_decoder()
+        self.model_tester.create_and_check_model_as_decoder(*config_and_inputs)
+
+    def test_model_as_decoder_with_default_input_mask(self):
+        # This regression test was failing with PyTorch < 1.3
+        (
+            config,
+            input_ids,
+            token_type_ids,
+            input_mask,
+            sequence_labels,
+            token_labels,
+            choice_labels,
+            encoder_hidden_states,
+            encoder_attention_mask,
+        ) = self.model_tester.prepare_config_and_inputs_for_decoder()
+
+        input_mask = None
+
+        self.model_tester.create_and_check_model_as_decoder(
+            config,
+            input_ids,
+            token_type_ids,
+            input_mask,
+            sequence_labels,
+            token_labels,
+            choice_labels,
+            encoder_hidden_states,
+            encoder_attention_mask,
+        )
 
     @slow
     def test_model_from_pretrained(self):
