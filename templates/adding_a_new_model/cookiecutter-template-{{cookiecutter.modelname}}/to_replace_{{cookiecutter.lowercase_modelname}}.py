@@ -17,6 +17,7 @@
     from .models.{{cookiecutter.lowercase_modelname}} import (
         {{cookiecutter.uppercase_modelname}}_PRETRAINED_MODEL_ARCHIVE_LIST,
         {{cookiecutter.camelcase_modelname}}ForMaskedLM,
+        {{cookiecutter.camelcase_modelname}}LMHeadModel,
         {{cookiecutter.camelcase_modelname}}ForMultipleChoice,
         {{cookiecutter.camelcase_modelname}}ForQuestionAnswering,
         {{cookiecutter.camelcase_modelname}}ForSequenceClassification,
@@ -84,6 +85,7 @@ from ..{{cookiecutter.lowercase_modelname}}.configuration_{{cookiecutter.lowerca
 # Replace with:
 from ..{{cookiecutter.lowercase_modelname}}.modeling_{{cookiecutter.lowercase_modelname}} import (
     {{cookiecutter.camelcase_modelname}}ForMaskedLM,
+    {{cookiecutter.camelcase_modelname}}LMHeadModel,
     {{cookiecutter.camelcase_modelname}}ForMultipleChoice,
     {{cookiecutter.camelcase_modelname}}ForQuestionAnswering,
     {{cookiecutter.camelcase_modelname}}ForSequenceClassification,
@@ -100,6 +102,11 @@ from ..{{cookiecutter.lowercase_modelname}}.modeling_{{cookiecutter.lowercase_mo
 # Below: "# Model with LM heads mapping"
 # Replace with:
         ({{cookiecutter.camelcase_modelname}}Config, {{cookiecutter.camelcase_modelname}}ForMaskedLM),
+# End.
+
+# Below: "# Model for Causal LM mapping"
+# Replace with:
+        ({{cookiecutter.camelcase_modelname}}Config, {{cookiecutter.camelcase_modelname}}LMHeadModel),
 # End.
 
 # Below: "# Model for Masked LM mapping"

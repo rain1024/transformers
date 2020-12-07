@@ -29,6 +29,7 @@ from ...file_utils import (
     add_code_sample_docstrings,
     add_start_docstrings,
     add_start_docstrings_to_model_forward,
+    replace_return_docstrings,
 )
 from ...modeling_outputs import (
     BaseModelOutputWithCrossAttentions,
@@ -900,126 +901,127 @@ class {{cookiecutter.camelcase_modelname}}ForMaskedLM({{cookiecutter.camelcase_m
         return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
-    @add_start_docstrings(
-        """{{cookiecutter.modelname}} Model with a `language modeling` head on top for CLM fine-tuning. """, BERT_START_DOCSTRING
-    )
-    class {{cookiecutter.camelcase_modelname}}LMHeadModel({{cookiecutter.camelcase_modelname}}PreTrainedModel):
+@add_start_docstrings(
+    """{{cookiecutter.modelname}} Model with a `language modeling` head on top for CLM fine-tuning. """, {{cookiecutter.uppercase_modelname}}_START_DOCSTRING
+)
+class {{cookiecutter.camelcase_modelname}}LMHeadModel({{cookiecutter.camelcase_modelname}}PreTrainedModel):
 
-        _keys_to_ignore_on_load_missing = [r"position_ids", r"predictions.decoder.bias"]
+    _keys_to_ignore_on_load_missing = [r"position_ids", r"predictions.decoder.bias"]
 
-        def __init__(self, config):
-            super().__init__(config)
+    def __init__(self, config):
+        super().__init__(config)
 
-            if not config.is_decoder:
-                logger.warning("If you want to use `{{cookiecutter.camelcase_modelname}}LMHeadModel` as a standalone, add `is_decoder=True.`")
+        if not config.is_decoder:
+            logger.warning("If you want to use `{{cookiecutter.camelcase_modelname}}LMHeadModel` as a standalone, add `is_decoder=True.`")
 
-            self.{{cookiecutter.lowercase_modelname}} = {{cookiecutter.camelcase_modelname}}Model(config, add_pooling_layer=False)
-            self.cls = {{cookiecutter.camelcase_modelname}}OnlyMLMHead(config)
+        self.{{cookiecutter.lowercase_modelname}} = {{cookiecutter.camelcase_modelname}}Model(config)
+        self.cls = {{cookiecutter.camelcase_modelname}}OnlyMLMHead(config)
 
-            self.init_weights()
+        self.init_weights()
 
-        def get_output_embeddings(self):
-            return self.cls.predictions.decoder
+    def get_output_embeddings(self):
+        return self.cls.predictions.decoder
 
-        def set_output_embeddings(self, new_embeddings):
-            self.cls.predictions.decoder = new_embeddings
+    def set_output_embeddings(self, new_embeddings):
+        self.cls.predictions.decoder = new_embeddings
 
-        @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
-        @replace_return_docstrings(output_type=CausalLMOutputWithCrossAttentions, config_class=_CONFIG_FOR_DOC)
-        def forward(
-                self,
-                input_ids=None,
-                attention_mask=None,
-                token_type_ids=None,
-                position_ids=None,
-                head_mask=None,
-                inputs_embeds=None,
-                encoder_hidden_states=None,
-                encoder_attention_mask=None,
-                labels=None,
-                output_attentions=None,
-                output_hidden_states=None,
-                return_dict=None,
-        ):
-            r"""
-            encoder_hidden_states  (:obj:`torch.FloatTensor` of shape :obj:`(batch_size, sequence_length, hidden_size)`, `optional`):
-                Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
-                the model is configured as a decoder.
-            encoder_attention_mask (:obj:`torch.FloatTensor` of shape :obj:`(batch_size, sequence_length)`, `optional`):
-                Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in
-                the cross-attention if the model is configured as a decoder. Mask values selected in ``[0, 1]``:
+    @add_start_docstrings_to_model_forward({{cookiecutter.uppercase_modelname}}_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    @replace_return_docstrings(output_type=CausalLMOutputWithCrossAttentions, config_class=_CONFIG_FOR_DOC)
+    def forward(
+            self,
+            input_ids=None,
+            attention_mask=None,
+            token_type_ids=None,
+            position_ids=None,
+            head_mask=None,
+            inputs_embeds=None,
+            encoder_hidden_states=None,
+            encoder_attention_mask=None,
+            labels=None,
+            output_attentions=None,
+            output_hidden_states=None,
+            return_dict=None,
+    ):
+        r"""
+        encoder_hidden_states  (:obj:`torch.FloatTensor` of shape :obj:`(batch_size, sequence_length, hidden_size)`, `optional`):
+            Sequence of hidden-states at the output of the last layer of the encoder. Used in the cross-attention if
+            the model is configured as a decoder.
+        encoder_attention_mask (:obj:`torch.FloatTensor` of shape :obj:`(batch_size, sequence_length)`, `optional`):
+            Mask to avoid performing attention on the padding token indices of the encoder input. This mask is used in
+            the cross-attention if the model is configured as a decoder. Mask values selected in ``[0, 1]``:
 
-                - 1 for tokens that are **not masked**,
-                - 0 for tokens that are **masked**.
-            labels (:obj:`torch.LongTensor` of shape :obj:`(batch_size, sequence_length)`, `optional`):
-                Labels for computing the left-to-right language modeling loss (next word prediction). Indices should be in
-                ``[-100, 0, ..., config.vocab_size]`` (see ``input_ids`` docstring) Tokens with indices set to ``-100`` are
-                ignored (masked), the loss is only computed for the tokens with labels n ``[0, ..., config.vocab_size]``
+            - 1 for tokens that are **not masked**,
+            - 0 for tokens that are **masked**.
+        labels (:obj:`torch.LongTensor` of shape :obj:`(batch_size, sequence_length)`, `optional`):
+            Labels for computing the left-to-right language modeling loss (next word prediction). Indices should be in
+            ``[-100, 0, ..., config.vocab_size]`` (see ``input_ids`` docstring) Tokens with indices set to ``-100`` are
+            ignored (masked), the loss is only computed for the tokens with labels n ``[0, ..., config.vocab_size]``
 
-            Returns:
+        Returns:
 
-            Example::
+        Example::
 
-                >>> from transformers import {{cookiecutter.camelcase_modelname}}Tokenizer, {{cookiecutter.camelcase_modelname}}LMHeadModel, {{cookiecutter.camelcase_modelname}}Config
-                >>> import torch
+            >>> from transformers import {{cookiecutter.camelcase_modelname}}Tokenizer, {{cookiecutter.camelcase_modelname}}LMHeadModel, {{cookiecutter.camelcase_modelname}}Config
+            >>> import torch
 
-                >>> tokenizer = {{cookiecutter.camelcase_modelname}}Tokenizer.from_pretrained('{{cookiecutter.checkpoint_identifier}}')
-                >>> config = {{cookiecutter.camelcase_modelname}}Config.from_pretrained("{{cookiecutter.checkpoint_identifier}}")
-                >>> config.is_decoder = True
-                >>> model = {{cookiecutter.camelcase_modelname}}LMHeadModel.from_pretrained('{{cookiecutter.checkpoint_identifier}}', config=config)
+            >>> tokenizer = {{cookiecutter.camelcase_modelname}}Tokenizer.from_pretrained('{{cookiecutter.checkpoint_identifier}}')
+            >>> config = {{cookiecutter.camelcase_modelname}}Config.from_pretrained("{{cookiecutter.checkpoint_identifier}}")
+            >>> config.is_decoder = True
+            >>> model = {{cookiecutter.camelcase_modelname}}LMHeadModel.from_pretrained('{{cookiecutter.checkpoint_identifier}}', config=config)
 
-                >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
-                >>> outputs = model(**inputs)
+            >>> inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+            >>> outputs = model(**inputs)
 
-                >>> prediction_logits = outputs.logits
-            """
-            return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+            >>> prediction_logits = outputs.logits
+        """
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-            outputs = self.{{cookiecutter.lowercase_modelname}}(
-                input_ids,
-                attention_mask=attention_mask,
-                token_type_ids=token_type_ids,
-                position_ids=position_ids,
-                head_mask=head_mask,
-                inputs_embeds=inputs_embeds,
-                encoder_hidden_states=encoder_hidden_states,
-                encoder_attention_mask=encoder_attention_mask,
-                output_attentions=output_attentions,
-                output_hidden_states=output_hidden_states,
-                return_dict=return_dict,
-            )
+        outputs = self.{{cookiecutter.lowercase_modelname}}(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
 
-            sequence_output = outputs[0]
-            prediction_scores = self.cls(sequence_output)
+        sequence_output = outputs[0]
+        prediction_scores = self.cls(sequence_output)
 
-            lm_loss = None
-            if labels is not None:
-                # we are doing next-token prediction; shift prediction scores and input ids by one
-                shifted_prediction_scores = prediction_scores[:, :-1, :].contiguous()
-                labels = labels[:, 1:].contiguous()
-                loss_fct = CrossEntropyLoss()
-                lm_loss = loss_fct(shifted_prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+        lm_loss = None
+        if labels is not None:
+            # we are doing next-token prediction; shift prediction scores and input ids by one
+            shifted_prediction_scores = prediction_scores[:, :-1, :].contiguous()
+            labels = labels[:, 1:].contiguous()
+            loss_fct = CrossEntropyLoss()
+            lm_loss = loss_fct(shifted_prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
 
-            if not return_dict:
-                output = (prediction_scores,) + outputs[2:]
-                return ((lm_loss,) + output) if lm_loss is not None else output
+        if not return_dict:
+            output = (prediction_scores,) + outputs[1:]
+            return ((lm_loss,) + output) if lm_loss is not None else output
 
-            return CausalLMOutputWithCrossAttentions(
-                loss=lm_loss,
-                logits=prediction_scores,
-                hidden_states=outputs.hidden_states,
-                attentions=outputs.attentions,
-                cross_attentions=outputs.cross_attentions,
-            )
+        return CausalLMOutputWithCrossAttentions(
+            loss=lm_loss,
+            logits=prediction_scores,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
+            cross_attentions=outputs.cross_attentions,
+        )
 
-        def prepare_inputs_for_generation(self, input_ids, attention_mask=None, **model_kwargs):
-            input_shape = input_ids.shape
+    def prepare_inputs_for_generation(self, input_ids, attention_mask=None, **model_kwargs):
+        input_shape = input_ids.shape
 
-            # if model is used as a decoder in encoder-decoder model, the decoder attention mask is created on the fly
-            if attention_mask is None:
-                attention_mask = input_ids.new_ones(input_shape)
+        # if model is used as a decoder in encoder-decoder model, the decoder attention mask is created on the fly
+        if attention_mask is None:
+            attention_mask = input_ids.new_ones(input_shape)
 
-            return {"input_ids": input_ids, "attention_mask": attention_mask}
+        return {"input_ids": input_ids, "attention_mask": attention_mask}
+
 class {{cookiecutter.camelcase_modelname}}ClassificationHead(nn.Module):
     """Head for sentence-level classification tasks."""
 
