@@ -31,8 +31,11 @@ jobs:
         uses: actions/cache@v2
         id: cache
         with:
-          path: /home/runner/.cache/pip
+          path: ~/.cache/pip
           key: v1.2-tests_templates-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            v1.2-tests_templates-${{ hashFiles('setup.py') }}
+            v1.2-tests_templates
 
       - name: Install dependencies
         run: |
