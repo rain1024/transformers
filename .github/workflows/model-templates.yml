@@ -32,7 +32,7 @@ jobs:
         id: cache
         with:
           path: ~/.cache/pip
-          key: v1.2-tests_templates-${{ hashFiles('setup.py') }}
+          key: v1.2-tests_templates
           restore-keys: |
             v1.2-tests_templates-${{ hashFiles('setup.py') }}
             v1.2-tests_templates
