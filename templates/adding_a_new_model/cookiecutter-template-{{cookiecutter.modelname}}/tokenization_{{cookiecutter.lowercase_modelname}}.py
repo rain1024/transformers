@@ -78,7 +78,6 @@ from typing import List, Optional
 from tokenizers import ByteLevelBPETokenizer
 
 from ...tokenization_utils import AddedToken, PreTrainedTokenizer
-from ...tokenization_utils_base import BatchEncoding
 from ...tokenization_utils_fast import PreTrainedTokenizerFast
 from ...utils import logging
 

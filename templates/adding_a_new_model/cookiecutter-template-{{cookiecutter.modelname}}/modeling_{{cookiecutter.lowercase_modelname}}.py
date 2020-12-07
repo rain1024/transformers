@@ -18,7 +18,6 @@
 
 import math
 import os
-import warnings
 
 import torch
 import torch.utils.checkpoint
@@ -33,11 +32,9 @@ from ...file_utils import (
 )
 from ...modeling_outputs import (
     BaseModelOutputWithCrossAttentions,
-    BaseModelOutputWithPoolingAndCrossAttentions,
     CausalLMOutputWithCrossAttentions,
     MaskedLMOutput,
     MultipleChoiceModelOutput,
-    NextSentencePredictorOutput,
     QuestionAnsweringModelOutput,
     SequenceClassifierOutput,
     TokenClassifierOutput,
